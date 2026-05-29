@@ -1,5 +1,17 @@
-# Data
-/data/
+# Data and generated artifacts are versioned with DVC.
+/data/**
+!/data/**/
+!/data/**/*.dvc
+!/data/**/.gitkeep
+/models/**
+!/models/
+!/models/.gitkeep
+/reports/**
+!/reports/
+!/reports/.gitkeep
+!/reports/*.metrics.json
+!/reports/figures/
+!/reports/figures/.gitkeep
 
 # Mac OS-specific storage files
 .DS_Store

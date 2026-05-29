@@ -17,6 +17,7 @@ classifiers = [
 ]
 dependencies = [
     "dvc",
+    "dvc-s3",
     "fastapi",
     "joblib",
     "matplotlib",

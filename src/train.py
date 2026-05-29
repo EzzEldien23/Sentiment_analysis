@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
 import time
 
@@ -19,6 +20,10 @@ from src.preprocessing import TextPreprocessor
 from src.vectorization import BM25Vectorizer, DistributionalEmbeddingVectorizer
 
 
+DAGSHUB_MLFLOW_URI = "https://dagshub.com/ezzeldiennassar/Sentiment_analysis.mlflow"
+DAGSHUB_USERNAME = "ezzeldiennassar"
+
+
 def maybe_import_mlflow():
     try:
         import mlflow
@@ -26,6 +31,16 @@ def maybe_import_mlflow():
         return mlflow
     except ImportError:
         return None
+
+
+def configure_mlflow(mlflow, experiment_name: str) -> None:
+    tracking_uri = os.getenv("MLFLOW_TRACKING_URI", DAGSHUB_MLFLOW_URI)
+    mlflow.set_tracking_uri(tracking_uri)
+    token = os.getenv("DAGSHUB_TOKEN")
+    if token:
+        os.environ.setdefault("MLFLOW_TRACKING_USERNAME", os.getenv("DAGSHUB_USERNAME", DAGSHUB_USERNAME))
+        os.environ.setdefault("MLFLOW_TRACKING_PASSWORD", token)
+    mlflow.set_experiment(experiment_name)
 
 
 def build_pipeline(dataset: str, vectorizer: str, reduction: str) -> Pipeline:
@@ -68,7 +83,7 @@ def train(args: argparse.Namespace) -> dict[str, float | str]:
 
     mlflow = maybe_import_mlflow()
     if mlflow:
-        mlflow.set_experiment(args.experiment_name)
+        configure_mlflow(mlflow, args.experiment_name)
 
     started = time.time()
     run_context = mlflow.start_run(run_name=args.run_name) if mlflow else nullcontext()
@@ -94,11 +109,6 @@ def train(args: argparse.Namespace) -> dict[str, float | str]:
             "sample": args.sample or "all",
             "test_size": args.test_size,
         }
-        if mlflow:
-            mlflow.log_params(params)
-            mlflow.log_metrics(metrics)
-            mlflow.sklearn.log_model(pipeline, "model")
-
         model_dir = Path(args.model_dir)
         model_dir.mkdir(parents=True, exist_ok=True)
         model_path = model_dir / f"{args.dataset}_{args.vectorizer}_{args.reduction}.joblib"
@@ -109,6 +119,21 @@ def train(args: argparse.Namespace) -> dict[str, float | str]:
             classification_report(test_df["label"], predictions, target_names=["negative", "positive"]),
             encoding="utf-8",
         )
+
+        if mlflow:
+            mlflow.set_tags(
+                {
+                    "dataset": args.dataset,
+                    "vectorizer": args.vectorizer,
+                    "reduction": args.reduction,
+                    "project": "Sentiment_analysis",
+                }
+            )
+            mlflow.log_params(params)
+            mlflow.log_metrics(metrics)
+            mlflow.log_artifact(str(report_path), artifact_path="reports")
+            mlflow.log_artifact(str(model_path), artifact_path="models")
+            mlflow.sklearn.log_model(pipeline, "sklearn_model")
 
     return {**params, **metrics, "model_path": str(model_path), "report_path": str(report_path)}
 

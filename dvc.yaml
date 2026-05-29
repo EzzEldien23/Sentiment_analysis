@@ -13,7 +13,7 @@ stages:
       --vectorizers ${training.vectorizers_cli}
       --reduction ${training.default_reduction}
       --data-dir ${data.raw_dir}
-      --model-dir ${training.model_dir}
+      --model-dir ${training.representation_model_dir}
       --sample ${training.sample}
       --test-size ${training.test_size}
       --random-state ${training.random_state}
@@ -32,12 +32,14 @@ stages:
       - training.vectorizers_cli
       - training.default_reduction
       - training.model_dir
+      - training.representation_model_dir
       - training.sample
       - training.test_size
       - training.random_state
       - training.experiment_name
       - reports.representation_comparison
     outs:
+      - ${training.representation_model_dir}
       - reports/model_comparison.md
     metrics:
       - reports/model_comparison.metrics.json:
@@ -55,7 +57,7 @@ stages:
       --vectorizers ${training.vectorizers_cli}
       --reductions ${training.reductions_cli}
       --data-dir ${data.raw_dir}
-      --model-dir ${training.model_dir}
+      --model-dir ${training.reduction_model_dir}
       --sample ${training.sample}
       --test-size ${training.test_size}
       --random-state ${training.random_state}
@@ -74,12 +76,14 @@ stages:
       - training.vectorizers_cli
       - training.reductions_cli
       - training.model_dir
+      - training.reduction_model_dir
       - training.sample
       - training.test_size
       - training.random_state
       - training.experiment_name
       - reports.reduction_comparison
     outs:
+      - ${training.reduction_model_dir}
       - reports/reduction_comparison.md
     metrics:
       - reports/reduction_comparison.metrics.json:

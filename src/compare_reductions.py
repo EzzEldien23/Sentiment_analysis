@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.train import train
+from src.train import configure_mlflow, maybe_import_mlflow, train
 
 
 def run_reduction_comparison(args: argparse.Namespace) -> pd.DataFrame:
@@ -41,7 +41,27 @@ def run_reduction_comparison(args: argparse.Namespace) -> pd.DataFrame:
         "best_accuracy": float(results["accuracy"].max()),
         "best_vocabulary_size": int(results["vocabulary_size"].max()),
     }
-    output.with_suffix(".metrics.json").write_text(json.dumps(metric_summary, indent=2), encoding="utf-8")
+    metrics_path = output.with_suffix(".metrics.json")
+    markdown_path = output.with_suffix(".md")
+    metrics_path.write_text(json.dumps(metric_summary, indent=2), encoding="utf-8")
+
+    mlflow = maybe_import_mlflow()
+    if mlflow:
+        configure_mlflow(mlflow, args.experiment_name)
+        with mlflow.start_run(run_name="compare-reductions-summary"):
+            mlflow.set_tag("run_type", "comparison_summary")
+            mlflow.log_params(
+                {
+                    "datasets": ",".join(args.datasets),
+                    "vectorizers": ",".join(args.vectorizers),
+                    "reductions": ",".join(args.reductions),
+                    "sample": args.sample,
+                }
+            )
+            mlflow.log_metrics(metric_summary)
+            mlflow.log_artifact(str(output), artifact_path="comparison_reports")
+            mlflow.log_artifact(str(markdown_path), artifact_path="comparison_reports")
+            mlflow.log_artifact(str(metrics_path), artifact_path="comparison_reports")
     return results
 
 
