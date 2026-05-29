@@ -1,0 +1,328 @@
+schema: '2.0'
+stages:
+  prepare_nltk_wordnet:
+    cmd: python -m src.setup_nltk --output-dir data/external/nltk_data
+    params:
+      params.yaml:
+        nltk.output_dir: data/external/nltk_data
+    outs:
+    - path: data/external/nltk_data
+      hash: md5
+      md5: e5492a96d13403f58aae666212b7cdfa.dir
+      size: 10775600
+      nfiles: 1
+  compare_representations:
+    cmd: python -m src.compare_representations --datasets amazon sentiment140 
+      --vectorizers bow tfidf bm25 embedding --reduction lemma --data-dir 
+      data/raw --model-dir models/representations --sample 5000 --test-size 0.2 
+      --random-state 42 --experiment-name sentiment-lab --output 
+      reports/model_comparison.csv
+    deps:
+    - path: data/external/nltk_data
+      hash: md5
+      md5: e5492a96d13403f58aae666212b7cdfa.dir
+      size: 10775600
+      nfiles: 1
+    - path: data/raw/Reviews.csv
+      hash: md5
+      md5: c3c950ae0be8b0736477c89d052d33fd
+      size: 300904694
+    - path: data/raw/training.1600000.processed.noemoticon.csv
+      hash: md5
+      md5: df952449d6f9b5f9fdfe3fc53ddef7ca
+      size: 238803811
+    - path: src
+      hash: md5
+      md5: d5f9290eaa05bbdb5bf31fe1eeb7aa02.dir
+      size: 125925
+      nfiles: 31
+    params:
+      params.yaml:
+        data.amazon_file: data/raw/Reviews.csv
+        data.raw_dir: data/raw
+        data.sentiment140_file: 
+          data/raw/training.1600000.processed.noemoticon.csv
+        reports.representation_comparison: reports/model_comparison.csv
+        training.datasets_cli: amazon sentiment140
+        training.default_reduction: lemma
+        training.experiment_name: sentiment-lab
+        training.model_dir: models
+        training.random_state: 42
+        training.representation_model_dir: models/representations
+        training.sample: 5000
+        training.test_size: 0.2
+        training.vectorizers_cli: bow tfidf bm25 embedding
+    outs:
+    - path: models/representations
+      hash: md5
+      md5: e13c8e44e53d797245b4bfa6ee962379.dir
+      size: 20755352
+      nfiles: 16
+    - path: reports/model_comparison.csv
+      hash: md5
+      md5: 9daee9dd92fa5d01848a73a820cd41d2
+      size: 1980
+    - path: reports/model_comparison.md
+      hash: md5
+      md5: 46ca0391e9f141d1e202ed3b52ad6c95
+      size: 3159
+    - path: reports/model_comparison.metrics.json
+      hash: md5
+      md5: e5a84429af510716cecc9e7141868228
+      size: 78
+  compare_reductions:
+    cmd: python -m src.compare_reductions --datasets amazon sentiment140 
+      --vectorizers bow tfidf bm25 embedding --reductions none stem lemma 
+      --data-dir data/raw --model-dir models/reductions --sample 5000 
+      --test-size 0.2 --random-state 42 --experiment-name sentiment-lab --output
+      reports/reduction_comparison.csv
+    deps:
+    - path: data/external/nltk_data
+      hash: md5
+      md5: e5492a96d13403f58aae666212b7cdfa.dir
+      size: 10775600
+      nfiles: 1
+    - path: data/raw/Reviews.csv
+      hash: md5
+      md5: c3c950ae0be8b0736477c89d052d33fd
+      size: 300904694
+    - path: data/raw/training.1600000.processed.noemoticon.csv
+      hash: md5
+      md5: df952449d6f9b5f9fdfe3fc53ddef7ca
+      size: 238803811
+    - path: src
+      hash: md5
+      md5: cc4f0220cca4f2329ff57c5749d1f364.dir
+      size: 128812
+      nfiles: 32
+    params:
+      params.yaml:
+        data.amazon_file: data/raw/Reviews.csv
+        data.raw_dir: data/raw
+        data.sentiment140_file: 
+          data/raw/training.1600000.processed.noemoticon.csv
+        reports.reduction_comparison: reports/reduction_comparison.csv
+        training.datasets_cli: amazon sentiment140
+        training.experiment_name: sentiment-lab
+        training.model_dir: models
+        training.random_state: 42
+        training.reduction_model_dir: models/reductions
+        training.reductions_cli: none stem lemma
+        training.sample: 5000
+        training.test_size: 0.2
+        training.vectorizers_cli: bow tfidf bm25 embedding
+    outs:
+    - path: models/reductions
+      hash: md5
+      md5: af721c65b8be0361c1b42353a71c6f7a.dir
+      size: 58724504
+      nfiles: 48
+    - path: reports/reduction_comparison.csv
+      hash: md5
+      md5: bd47ef6ec77431e05a63112891dc2c35
+      size: 5364
+    - path: reports/reduction_comparison.md
+      hash: md5
+      md5: 5f639fa46ce0bc9af1db12f8dad82bf9
+      size: 7955
+    - path: reports/reduction_comparison.metrics.json
+      hash: md5
+      md5: ddc81dc44594656da63698e38eb09c67
+      size: 113
+  nearest_words_amazon:
+    cmd: python -m src.nearest_words --dataset amazon --terms good bad coffee 
+      stale fresh love hate --data-dir data/raw --sample 10000 --max-features 
+      20000 --embedding-dim 100 --window-size 4 --top-k 10 --reduction lemma 
+      --random-state 42 --output reports/nearest_words_amazon.csv
+    deps:
+    - path: data/external/nltk_data
+      hash: md5
+      md5: e5492a96d13403f58aae666212b7cdfa.dir
+      size: 10775600
+      nfiles: 1
+    - path: data/raw/Reviews.csv
+      hash: md5
+      md5: c3c950ae0be8b0736477c89d052d33fd
+      size: 300904694
+    - path: src
+      hash: md5
+      md5: 13f0261840b43ed348e4fc1a98515c26.dir
+      size: 131063
+      nfiles: 33
+    params:
+      params.yaml:
+        data.amazon_file: data/raw/Reviews.csv
+        data.raw_dir: data/raw
+        nearest_words.amazon_dataset: amazon
+        nearest_words.amazon_output: reports/nearest_words_amazon.csv
+        nearest_words.amazon_terms_cli: good bad coffee stale fresh love hate
+        nearest_words.embedding_dim: 100
+        nearest_words.max_features: 20000
+        nearest_words.reduction: lemma
+        nearest_words.sample: 10000
+        nearest_words.top_k: 10
+        nearest_words.window_size: 4
+        training.random_state: 42
+    outs:
+    - path: reports/nearest_words_amazon.csv
+      hash: md5
+      md5: 962a4b05ff69fcf66596dd22d6631d60
+      size: 2801
+  nearest_words_sentiment140:
+    cmd: python -m src.nearest_words --dataset sentiment140 --terms good bad 
+      love hate happy sad tired awesome --data-dir data/raw --sample 10000 
+      --max-features 20000 --embedding-dim 100 --window-size 4 --top-k 10 
+      --reduction lemma --random-state 42 --output 
+      reports/nearest_words_sentiment140.csv
+    deps:
+    - path: data/external/nltk_data
+      hash: md5
+      md5: e5492a96d13403f58aae666212b7cdfa.dir
+      size: 10775600
+      nfiles: 1
+    - path: data/raw/training.1600000.processed.noemoticon.csv
+      hash: md5
+      md5: df952449d6f9b5f9fdfe3fc53ddef7ca
+      size: 238803811
+    - path: src
+      hash: md5
+      md5: 13f0261840b43ed348e4fc1a98515c26.dir
+      size: 131063
+      nfiles: 33
+    params:
+      params.yaml:
+        data.raw_dir: data/raw
+        data.sentiment140_file: 
+          data/raw/training.1600000.processed.noemoticon.csv
+        nearest_words.embedding_dim: 100
+        nearest_words.max_features: 20000
+        nearest_words.reduction: lemma
+        nearest_words.sample: 10000
+        nearest_words.sentiment140_dataset: sentiment140
+        nearest_words.sentiment140_output: 
+          reports/nearest_words_sentiment140.csv
+        nearest_words.sentiment140_terms_cli: good bad love hate happy sad tired
+          awesome
+        nearest_words.top_k: 10
+        nearest_words.window_size: 4
+        training.random_state: 42
+    outs:
+    - path: reports/nearest_words_sentiment140.csv
+      hash: md5
+      md5: 4bcab776a801ae49a1c188a3345f5d56
+      size: 3643
+  visualize_embeddings_amazon:
+    cmd: python -m src.embeddings --dataset amazon --data-dir data/raw --sample 
+      50000 --max-features 20000 --dimensions 100 --plot-terms 150 --reduction 
+      lemma --random-state 42 --output reports/figures/amazon_embeddings.png
+    deps:
+    - path: data/external/nltk_data
+      hash: md5
+      md5: e5492a96d13403f58aae666212b7cdfa.dir
+      size: 10775600
+      nfiles: 1
+    - path: data/raw/Reviews.csv
+      hash: md5
+      md5: c3c950ae0be8b0736477c89d052d33fd
+      size: 300904694
+    - path: src
+      hash: md5
+      md5: fe82ad4dde3b8760018e1c6b17e0db1b.dir
+      size: 134231
+      nfiles: 34
+    params:
+      params.yaml:
+        data.amazon_file: data/raw/Reviews.csv
+        data.raw_dir: data/raw
+        embeddings.amazon_dataset: amazon
+        embeddings.amazon_output: reports/figures/amazon_embeddings.png
+        embeddings.dimensions: 100
+        embeddings.max_features: 20000
+        embeddings.plot_terms: 150
+        embeddings.reduction: lemma
+        embeddings.sample: 50000
+        training.random_state: 42
+    outs:
+    - path: reports/figures/amazon_embeddings.parquet
+      hash: md5
+      md5: 49c08db825393416cb4f8ad7e2c33c7c
+      size: 19861569
+    - path: reports/figures/amazon_embeddings.png
+      hash: md5
+      md5: ea0b2453893b6e84d77b440f610305ec
+      size: 205709
+  visualize_embeddings_sentiment140:
+    cmd: python -m src.embeddings --dataset sentiment140 --data-dir data/raw 
+      --sample 50000 --max-features 20000 --dimensions 100 --plot-terms 150 
+      --reduction lemma --random-state 42 --output 
+      reports/figures/sentiment140_embeddings.png
+    deps:
+    - path: data/external/nltk_data
+      hash: md5
+      md5: e5492a96d13403f58aae666212b7cdfa.dir
+      size: 10775600
+      nfiles: 1
+    - path: data/raw/training.1600000.processed.noemoticon.csv
+      hash: md5
+      md5: df952449d6f9b5f9fdfe3fc53ddef7ca
+      size: 238803811
+    - path: src
+      hash: md5
+      md5: fe82ad4dde3b8760018e1c6b17e0db1b.dir
+      size: 134231
+      nfiles: 34
+    params:
+      params.yaml:
+        data.raw_dir: data/raw
+        data.sentiment140_file: 
+          data/raw/training.1600000.processed.noemoticon.csv
+        embeddings.dimensions: 100
+        embeddings.max_features: 20000
+        embeddings.plot_terms: 150
+        embeddings.reduction: lemma
+        embeddings.sample: 50000
+        embeddings.sentiment140_dataset: sentiment140
+        embeddings.sentiment140_output: 
+          reports/figures/sentiment140_embeddings.png
+        training.random_state: 42
+    outs:
+    - path: reports/figures/sentiment140_embeddings.parquet
+      hash: md5
+      md5: facb45b6c91ab206a2b7023a3fbe811c
+      size: 13805781
+    - path: reports/figures/sentiment140_embeddings.png
+      hash: md5
+      md5: 1f9a942253ebe8f69da122d1f119b5ad
+      size: 203874
+  build_search:
+    cmd: python -m src.search --input data/raw/Reviews.csv --output 
+      models/amazon_bm25_search.joblib --sample 500000 --max-features 150000 
+      --reduction lemma --random-state 42
+    deps:
+    - path: data/external/nltk_data
+      hash: md5
+      md5: e5492a96d13403f58aae666212b7cdfa.dir
+      size: 10775600
+      nfiles: 1
+    - path: data/raw/Reviews.csv
+      hash: md5
+      md5: c3c950ae0be8b0736477c89d052d33fd
+      size: 300904694
+    - path: src
+      hash: md5
+      md5: f02b9c26d2881db20bcbb87ea60f8625.dir
+      size: 138041
+      nfiles: 35
+    params:
+      params.yaml:
+        search.input: data/raw/Reviews.csv
+        search.max_features: 150000
+        search.output: models/amazon_bm25_search.joblib
+        search.random_state: 42
+        search.reduction: lemma
+        search.sample: 500000
+    outs:
+    - path: models/amazon_bm25_search.joblib
+      hash: md5
+      md5: 18015ea8e450e05bab6ec11109075a55
+      size: 746237535

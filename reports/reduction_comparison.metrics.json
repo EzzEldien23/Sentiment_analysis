@@ -1,0 +1,6 @@
+{
+  "rows": 24,
+  "best_f1": 0.9573348918760959,
+  "best_accuracy": 0.927,
+  "best_vocabulary_size": 32586
+}
