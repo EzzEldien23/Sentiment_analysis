@@ -6,12 +6,8 @@
 /models/**
 !/models/
 !/models/.gitkeep
-/reports/**
-!/reports/
-!/reports/.gitkeep
-!/reports/*.metrics.json
-!/reports/figures/
-!/reports/figures/.gitkeep
+!/reports/**
+
 
 # Mac OS-specific storage files
 .DS_Store
