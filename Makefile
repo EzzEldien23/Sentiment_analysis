@@ -38,6 +38,46 @@ format:
 	ruff check --fix
 	ruff format
 
+## Train a baseline Amazon TF-IDF model
+.PHONY: train-amazon
+train-amazon:
+	$(PYTHON_INTERPRETER) -m src.train --dataset amazon --vectorizer tfidf --reduction lemma
+
+## Train a baseline Sentiment140 TF-IDF model
+.PHONY: train-sentiment140
+train-sentiment140:
+	$(PYTHON_INTERPRETER) -m src.train --dataset sentiment140 --vectorizer tfidf --reduction lemma
+
+## Build the Amazon BM25 search index
+.PHONY: search-index
+search-index:
+	$(PYTHON_INTERPRETER) -m src.search
+
+## Create a word embedding visualization
+.PHONY: embeddings
+embeddings:
+	$(PYTHON_INTERPRETER) -m src.embeddings
+
+## Compare BoW, TF-IDF, BM25, and embedding classifiers
+.PHONY: compare
+compare:
+	$(PYTHON_INTERPRETER) -m src.compare_representations
+
+## Compare no reduction, stemming, and lemmatization
+.PHONY: compare-reductions
+compare-reductions:
+	$(PYTHON_INTERPRETER) -m src.compare_reductions
+
+## Show nearest words from learned distributional embeddings
+.PHONY: nearest-words
+nearest-words:
+	$(PYTHON_INTERPRETER) -m src.nearest_words
+
+## Run the FastAPI app locally
+.PHONY: api
+api:
+	uvicorn src.api:app --reload --host 0.0.0.0 --port 8000
+
 
 
 

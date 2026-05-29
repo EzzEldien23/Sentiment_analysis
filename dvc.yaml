@@ -1,0 +1,246 @@
+stages:
+  prepare_nltk_wordnet:
+    cmd: python -m src.setup_nltk --output-dir ${nltk.output_dir}
+    params:
+      - nltk.output_dir
+    outs:
+      - ${nltk.output_dir}
+
+  compare_representations:
+    cmd: >-
+      python -m src.compare_representations
+      --datasets ${training.datasets_cli}
+      --vectorizers ${training.vectorizers_cli}
+      --reduction ${training.default_reduction}
+      --data-dir ${data.raw_dir}
+      --model-dir ${training.model_dir}
+      --sample ${training.sample}
+      --test-size ${training.test_size}
+      --random-state ${training.random_state}
+      --experiment-name ${training.experiment_name}
+      --output ${reports.representation_comparison}
+    deps:
+      - src
+      - ${data.amazon_file}
+      - ${data.sentiment140_file}
+      - ${nltk.output_dir}
+    params:
+      - data.raw_dir
+      - data.amazon_file
+      - data.sentiment140_file
+      - training.datasets_cli
+      - training.vectorizers_cli
+      - training.default_reduction
+      - training.model_dir
+      - training.sample
+      - training.test_size
+      - training.random_state
+      - training.experiment_name
+      - reports.representation_comparison
+    outs:
+      - reports/model_comparison.md
+    metrics:
+      - reports/model_comparison.metrics.json:
+          cache: false
+    plots:
+      - ${reports.representation_comparison}:
+          template: linear
+          x: vectorizer
+          y: f1
+
+  compare_reductions:
+    cmd: >-
+      python -m src.compare_reductions
+      --datasets ${training.datasets_cli}
+      --vectorizers ${training.vectorizers_cli}
+      --reductions ${training.reductions_cli}
+      --data-dir ${data.raw_dir}
+      --model-dir ${training.model_dir}
+      --sample ${training.sample}
+      --test-size ${training.test_size}
+      --random-state ${training.random_state}
+      --experiment-name ${training.experiment_name}
+      --output ${reports.reduction_comparison}
+    deps:
+      - src
+      - ${data.amazon_file}
+      - ${data.sentiment140_file}
+      - ${nltk.output_dir}
+    params:
+      - data.raw_dir
+      - data.amazon_file
+      - data.sentiment140_file
+      - training.datasets_cli
+      - training.vectorizers_cli
+      - training.reductions_cli
+      - training.model_dir
+      - training.sample
+      - training.test_size
+      - training.random_state
+      - training.experiment_name
+      - reports.reduction_comparison
+    outs:
+      - reports/reduction_comparison.md
+    metrics:
+      - reports/reduction_comparison.metrics.json:
+          cache: false
+    plots:
+      - ${reports.reduction_comparison}:
+          template: linear
+          x: reduction
+          y: f1
+
+  nearest_words_amazon:
+    cmd: >-
+      python -m src.nearest_words
+      --dataset ${nearest_words.amazon_dataset}
+      --terms ${nearest_words.amazon_terms_cli}
+      --data-dir ${data.raw_dir}
+      --sample ${nearest_words.sample}
+      --max-features ${nearest_words.max_features}
+      --embedding-dim ${nearest_words.embedding_dim}
+      --window-size ${nearest_words.window_size}
+      --top-k ${nearest_words.top_k}
+      --reduction ${nearest_words.reduction}
+      --random-state ${training.random_state}
+      --output ${nearest_words.amazon_output}
+    deps:
+      - src
+      - ${data.amazon_file}
+      - ${nltk.output_dir}
+    params:
+      - data.raw_dir
+      - data.amazon_file
+      - nearest_words.amazon_dataset
+      - nearest_words.amazon_terms_cli
+      - nearest_words.sample
+      - nearest_words.max_features
+      - nearest_words.embedding_dim
+      - nearest_words.window_size
+      - nearest_words.top_k
+      - nearest_words.reduction
+      - training.random_state
+      - nearest_words.amazon_output
+    outs:
+      - ${nearest_words.amazon_output}
+
+  nearest_words_sentiment140:
+    cmd: >-
+      python -m src.nearest_words
+      --dataset ${nearest_words.sentiment140_dataset}
+      --terms ${nearest_words.sentiment140_terms_cli}
+      --data-dir ${data.raw_dir}
+      --sample ${nearest_words.sample}
+      --max-features ${nearest_words.max_features}
+      --embedding-dim ${nearest_words.embedding_dim}
+      --window-size ${nearest_words.window_size}
+      --top-k ${nearest_words.top_k}
+      --reduction ${nearest_words.reduction}
+      --random-state ${training.random_state}
+      --output ${nearest_words.sentiment140_output}
+    deps:
+      - src
+      - ${data.sentiment140_file}
+      - ${nltk.output_dir}
+    params:
+      - data.raw_dir
+      - data.sentiment140_file
+      - nearest_words.sentiment140_dataset
+      - nearest_words.sentiment140_terms_cli
+      - nearest_words.sample
+      - nearest_words.max_features
+      - nearest_words.embedding_dim
+      - nearest_words.window_size
+      - nearest_words.top_k
+      - nearest_words.reduction
+      - training.random_state
+      - nearest_words.sentiment140_output
+    outs:
+      - ${nearest_words.sentiment140_output}
+
+  visualize_embeddings_amazon:
+    cmd: >-
+      python -m src.embeddings
+      --dataset ${embeddings.amazon_dataset}
+      --data-dir ${data.raw_dir}
+      --sample ${embeddings.sample}
+      --max-features ${embeddings.max_features}
+      --dimensions ${embeddings.dimensions}
+      --plot-terms ${embeddings.plot_terms}
+      --reduction ${embeddings.reduction}
+      --random-state ${training.random_state}
+      --output ${embeddings.amazon_output}
+    deps:
+      - src
+      - ${data.amazon_file}
+      - ${nltk.output_dir}
+    params:
+      - data.raw_dir
+      - data.amazon_file
+      - embeddings.amazon_dataset
+      - embeddings.sample
+      - embeddings.max_features
+      - embeddings.dimensions
+      - embeddings.plot_terms
+      - embeddings.reduction
+      - embeddings.amazon_output
+      - training.random_state
+    outs:
+      - reports/figures/amazon_embeddings.parquet
+    plots:
+      - ${embeddings.amazon_output}
+
+  visualize_embeddings_sentiment140:
+    cmd: >-
+      python -m src.embeddings
+      --dataset ${embeddings.sentiment140_dataset}
+      --data-dir ${data.raw_dir}
+      --sample ${embeddings.sample}
+      --max-features ${embeddings.max_features}
+      --dimensions ${embeddings.dimensions}
+      --plot-terms ${embeddings.plot_terms}
+      --reduction ${embeddings.reduction}
+      --random-state ${training.random_state}
+      --output ${embeddings.sentiment140_output}
+    deps:
+      - src
+      - ${data.sentiment140_file}
+      - ${nltk.output_dir}
+    params:
+      - data.raw_dir
+      - data.sentiment140_file
+      - embeddings.sentiment140_dataset
+      - embeddings.sample
+      - embeddings.max_features
+      - embeddings.dimensions
+      - embeddings.plot_terms
+      - embeddings.reduction
+      - embeddings.sentiment140_output
+      - training.random_state
+    outs:
+      - reports/figures/sentiment140_embeddings.parquet
+    plots:
+      - ${embeddings.sentiment140_output}
+
+  build_search:
+    cmd: >-
+      python -m src.search
+      --input ${search.input}
+      --output ${search.output}
+      --sample ${search.sample}
+      --max-features ${search.max_features}
+      --reduction ${search.reduction}
+      --random-state ${search.random_state}
+    deps:
+      - src
+      - ${data.amazon_file}
+      - ${nltk.output_dir}
+    params:
+      - search.input
+      - search.output
+      - search.sample
+      - search.max_features
+      - search.reduction
+      - search.random_state
+    outs:
+      - ${search.output}

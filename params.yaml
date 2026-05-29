@@ -1,0 +1,55 @@
+data:
+  raw_dir: data/raw
+  amazon_file: data/raw/Reviews.csv
+  sentiment140_file: data/raw/training.1600000.processed.noemoticon.csv
+
+nltk:
+  output_dir: data/external/nltk_data
+
+training:
+  datasets_cli: amazon sentiment140
+  vectorizers_cli: bow tfidf bm25 embedding
+  reductions_cli: none stem lemma
+  default_reduction: lemma
+  sample: 5000
+  test_size: 0.2
+  random_state: 42
+  model_dir: models
+  experiment_name: sentiment-lab
+
+search:
+  input: data/raw/Reviews.csv
+  output: models/amazon_bm25_search.joblib
+  sample: 500000
+  max_features: 150000
+  reduction: lemma
+  random_state: 42
+
+embeddings:
+  amazon_dataset: amazon
+  sentiment140_dataset: sentiment140
+  sample: 50000
+  max_features: 20000
+  dimensions: 100
+  plot_terms: 150
+  reduction: lemma
+  amazon_output: reports/figures/amazon_embeddings.png
+  sentiment140_output: reports/figures/sentiment140_embeddings.png
+
+nearest_words:
+  amazon_dataset: amazon
+  sentiment140_dataset: sentiment140
+  sample: 10000
+  top_k: 10
+  max_features: 20000
+  embedding_dim: 100
+  window_size: 4
+  reduction: lemma
+  amazon_terms_cli: good bad coffee stale fresh love hate
+  sentiment140_terms_cli: good bad love hate happy sad tired awesome
+  amazon_output: reports/nearest_words_amazon.csv
+  sentiment140_output: reports/nearest_words_sentiment140.csv
+
+reports:
+  representation_comparison: reports/model_comparison.csv
+  reduction_comparison: reports/reduction_comparison.csv

@@ -16,10 +16,23 @@ classifiers = [
     
 ]
 dependencies = [
+    "dvc",
+    "fastapi",
+    "joblib",
+    "matplotlib",
+    "mlflow",
     "mkdocs",
+    "nltk",
+    "numpy",
+    "pandas",
     "pip",
+    "pydantic",
+    "pyarrow",
     "python-dotenv",
     "ruff",
+    "scikit-learn",
+    "scipy",
+    "uvicorn",
 ]
 requires-python = "~=3.10.0"
 

@@ -1,61 +1,111 @@
-# sentiment analysis
+# Sentiment Analysis Production Lab
 
-<a target="_blank" href="https://cookiecutter-data-science.drivendata.org/">
-    <img src="https://img.shields.io/badge/CCDS-Project%20template-328F97?logo=cookiecutter" />
-</a>
+End-to-end NLP lab comparing Amazon Fine Food Reviews with Sentiment140. The project covers
+normalization, tokenization, stemming, lemmatization, BoW, TF-IDF, BM25, experiment tracking,
+retrieval, and API deployment.
 
-A short description of the project.
+## What is included
 
-## Project Organization
+- Reusable preprocessing: `src.preprocessing.TextPreprocessor`
+- Dataset loaders for Amazon and Sentiment140: `src.data`
+- BoW, TF-IDF, and BM25 training: `src.train`
+- BM25 retrieval with positive/negative filtering: `src.search`
+- FastAPI service for `/predict`, `/search`, and `/health`: `src.api`
+- DVC pipeline stages in `dvc.yaml`
+- Docker packaging in `Dockerfile`
 
-```
-├── LICENSE            <- Open-source license if one is chosen
-├── Makefile           <- Makefile with convenience commands like `make data` or `make train`
-├── README.md          <- The top-level README for developers using this project.
-├── data
-│   ├── external       <- Data from third party sources.
-│   ├── interim        <- Intermediate data that has been transformed.
-│   ├── processed      <- The final, canonical data sets for modeling.
-│   └── raw            <- The original, immutable data dump.
-│
-├── docs               <- A default mkdocs project; see www.mkdocs.org for details
-│
-├── models             <- Trained and serialized models, model predictions, or model summaries
-│
-├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
-│                         the creator's initials, and a short `-` delimited description, e.g.
-│                         `1.0-jqp-initial-data-exploration`.
-│
-├── pyproject.toml     <- Project configuration file with package metadata for 
-│                         src and configuration for tools like black
-│
-├── references         <- Data dictionaries, manuals, and all other explanatory materials.
-│
-├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
-│   └── figures        <- Generated graphics and figures to be used in reporting
-│
-├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
-│                         generated with `pip freeze > requirements.txt`
-│
-├── setup.cfg          <- Configuration file for flake8
-│
-└── src   <- Source code for use in this project.
-    │
-    ├── __init__.py             <- Makes src a Python module
-    │
-    ├── config.py               <- Store useful variables and configuration
-    │
-    ├── dataset.py              <- Scripts to download or generate data
-    │
-    ├── features.py             <- Code to create features for modeling
-    │
-    ├── modeling                
-    │   ├── __init__.py 
-    │   ├── predict.py          <- Code to run model inference with trained models          
-    │   └── train.py            <- Code to train models
-    │
-    └── plots.py                <- Code to create visualizations
+## Data
+
+Place the raw files here:
+
+- `data/raw/Reviews.csv`
+- `data/raw/training.1600000.processed.noemoticon.csv`
+
+The current workspace already contains both files. After installing DVC, initialize tracking:
+
+```powershell
+dvc init
+dvc add data/raw/Reviews.csv data/raw/training.1600000.processed.noemoticon.csv
+git add .dvc .dvcignore data/raw/*.dvc
 ```
 
---------
+## Setup
 
+```powershell
+uv sync
+```
+
+Or with pip:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+## Train Experiments
+
+Run one experiment:
+
+```powershell
+python -m src.train --dataset amazon --vectorizer tfidf --reduction lemma --sample 50000
+```
+
+Compare vectorizers:
+
+```powershell
+python -m src.train --dataset amazon --vectorizer bow --reduction lemma
+python -m src.train --dataset amazon --vectorizer tfidf --reduction lemma
+python -m src.train --dataset amazon --vectorizer bm25 --reduction lemma
+python -m src.train --dataset sentiment140 --vectorizer bow --reduction lemma
+python -m src.train --dataset sentiment140 --vectorizer tfidf --reduction lemma
+python -m src.train --dataset sentiment140 --vectorizer bm25 --reduction lemma
+```
+
+If MLflow is installed, runs are logged to the `sentiment-lab` experiment automatically:
+
+```powershell
+mlflow ui
+```
+
+## Build Search
+
+```powershell
+python -m src.search --sample 500000
+```
+
+This writes `models/amazon_bm25_search.joblib`.
+
+## Reproduce With DVC
+
+```powershell
+dvc repro
+```
+
+The default DVC stages train TF-IDF baselines for both datasets and build the Amazon BM25
+search index.
+
+## Serve API
+
+Train an Amazon model and build the search index first, then run:
+
+```powershell
+uvicorn src.api:app --reload --host 0.0.0.0 --port 8000
+```
+
+Example requests:
+
+```powershell
+Invoke-RestMethod -Uri http://localhost:8000/health
+Invoke-RestMethod -Method Post -Uri http://localhost:8000/predict -ContentType application/json -Body '{"text":"This coffee tastes fresh and smells amazing"}'
+Invoke-RestMethod -Method Post -Uri http://localhost:8000/search -ContentType application/json -Body '{"query":"fresh coffee aroma","sentiment":"positive","top_k":5}'
+```
+
+## Docker
+
+```powershell
+docker build -t sentiment-lab-api .
+docker run --rm -p 8000:8000 sentiment-lab-api
+```
+
+The image expects trained artifacts under `models/` before build time.
