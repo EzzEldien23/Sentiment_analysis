@@ -16,7 +16,7 @@ except ImportError as exc:  # pragma: no cover - clear error for missing runtime
 from src.search import SentimentSearchEngine, load_engine
 
 
-MODEL_PATH = Path(os.getenv("MODEL_PATH", "models/amazon_tfidf_lemma.joblib"))
+MODEL_PATH = Path(os.getenv("MODEL_PATH", "models/reductions/amazon_bow_stem.joblib"))
 SEARCH_INDEX_PATH = Path(os.getenv("SEARCH_INDEX_PATH", "models/amazon_bm25_search.joblib"))
 
 app = FastAPI(title="Sentiment Analysis Lab API", version="0.1.0")
