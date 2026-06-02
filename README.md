@@ -4,62 +4,11 @@ End-to-end NLP lab comparing Amazon Fine Food Reviews with Sentiment140. The pro
 normalization, tokenization, stemming, lemmatization, BoW, TF-IDF, BM25, experiment tracking,
 retrieval, and API deployment.
 
-## DagsHub, DVC, and MLflow Setup
-
-The repository is configured for:
-
-- DagsHub repository: `https://dagshub.com/ezzeldiennassar/Sentiment_analysis`
-- DVC remote: `s3://dvc`
-- DagsHub S3 endpoint: `https://dagshub.com/ezzeldiennassar/Sentiment_analysis.s3`
-- MLflow tracking URI: `https://dagshub.com/ezzeldiennassar/Sentiment_analysis.mlflow`
-
 Install dependencies:
 
 ```powershell
 uv sync
 ```
-
-Configure DVC credentials locally. Do not commit `.dvc/config.local`.
-
-```powershell
-uv run dvc remote add origin s3://dvc
-uv run dvc remote modify origin endpointurl https://dagshub.com/ezzeldiennassar/Sentiment_analysis.s3
-uv run dvc remote modify origin --local access_key_id <DAGSHUB_TOKEN>
-uv run dvc remote modify origin --local secret_access_key <DAGSHUB_TOKEN>
-uv run dvc remote default origin
-```
-
-Configure MLflow for the current Windows `cmd.exe` session:
-
-```cmd
-set DAGSHUB_TOKEN=<DAGSHUB_TOKEN>
-set MLFLOW_TRACKING_URI=https://dagshub.com/ezzeldiennassar/Sentiment_analysis.mlflow
-set MLFLOW_TRACKING_USERNAME=ezzeldiennassar
-set MLFLOW_TRACKING_PASSWORD=<DAGSHUB_TOKEN>
-```
-
-For PowerShell:
-
-```powershell
-$env:DAGSHUB_TOKEN="<DAGSHUB_TOKEN>"
-$env:MLFLOW_TRACKING_URI="https://dagshub.com/ezzeldiennassar/Sentiment_analysis.mlflow"
-$env:MLFLOW_TRACKING_USERNAME="ezzeldiennassar"
-$env:MLFLOW_TRACKING_PASSWORD="<DAGSHUB_TOKEN>"
-```
-
-Run the reproducible pipeline and push artifacts:
-
-```powershell
-uv run dvc repro
-uv run dvc push
-git add .dvc/config .dvc/.gitignore .gitignore dvc.yaml params.yaml README.md pyproject.toml requirements.txt src
-git commit -m "Configure DagsHub DVC and MLflow tracking"
-git push
-```
-
-Every training run logs to DagsHub MLflow when `mlflow` is installed. The training scripts log
-dataset, vectorizer, reduction, sample size, accuracy, precision, recall, F1 score, vocabulary
-size, training time, generated reports, and trained model artifacts.
 
 ## What is included
 
@@ -78,13 +27,6 @@ Place the raw files here:
 - `data/raw/Reviews.csv`
 - `data/raw/training.1600000.processed.noemoticon.csv`
 
-The current workspace already contains both files. After installing DVC, initialize tracking:
-
-```powershell
-dvc init
-dvc add data/raw/Reviews.csv data/raw/training.1600000.processed.noemoticon.csv
-git add .dvc .dvcignore data/raw/*.dvc
-```
 
 ## Setup
 
